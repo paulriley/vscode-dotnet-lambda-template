@@ -1,7 +1,10 @@
-FROM buildpack-deps:bionic AS basics
+FROM buildpack-deps:focal-curl AS basics
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG en_GB
+
+# Do not exclude man pages & other documentation
+RUN rm /etc/dpkg/dpkg.cfg.d/excludes
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -45,10 +48,11 @@ RUN apt-get update \
         # .NET Core requirements
         libc6 \
         libgcc1 \
+        libgcc-s1 \
         libgssapi-krb5-2 \
-        libicu60 \
         libssl1.1 \
         libstdc++6 \
+        libicu66 \
         zlib1g \
         -y --no-install-recommends \
     # Cleanup, to keep interim container small
@@ -71,17 +75,16 @@ RUN dotnet_sdk_version=3.1.102 \
 
 FROM dotnet-essentials AS required
 
-RUN curl -fsSL https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]')/gpg | (OUT=$(apt-key add - 2>&1) || echo $OUT) \
-    && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]') $(lsb_release -cs) stable" \
-    && apt-get update \
+# RUN curl -fsSL https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]')/gpg | (OUT=$(apt-key add - 2>&1) || echo $OUT) \
+    # && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]') $(lsb_release -cs) stable" \
+RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         # zsh/docker/git requirements
         apt-transport-https \
         apt-utils \
-        ca-certificates \
-        curl \
         dialog \
         dnsutils \
+        docker.io \
         gcc \
         git \
         git-man \
@@ -97,17 +100,12 @@ RUN curl -fsSL https://download.docker.com/linux/$(lsb_release -is | tr '[:upper
         unzip \
         zsh \
         2>&1 \
-        # Install Docker CLI
-        docker-ce-cli \
     # Cleanup
     && apt-get autoremove -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
 FROM required AS man-install
-
-# Do not exclude man pages & other documentation
-RUN rm /etc/dpkg/dpkg.cfg.d/excludes
 
 # Reinstall all currently installed packages in order to get the man pages back
 RUN apt-get update && \
