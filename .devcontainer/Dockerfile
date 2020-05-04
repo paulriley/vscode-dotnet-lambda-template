@@ -128,10 +128,18 @@ RUN UNPACKFOLDER=/tmp/unpack \
     && echo "provider \"aws\" {}" >> ${UNPACKFOLDER}/lsp/providers.tf \
     && wget -c https://github.com/juliosueiras/terraform-lsp/releases/download/v${TERRAFORM_LSP_VERSION}/terraform-lsp_${TERRAFORM_LSP_VERSION}_linux_amd64.tar.gz -O - | tar -zx -C ${UNPACKFOLDER}/lsp/
 
+FROM required AS gh
+
+RUN UNPACKFOLDER=/tmp/unpack \
+    && GH_VERSION=0.7.0 \
+    && mkdir -p ${UNPACKFOLDER} \
+    && wget -c https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz -O - | tar -zx --strip-components=1 -C ${UNPACKFOLDER}/
+
 FROM man-install as final
 
 COPY --from=terraform /tmp/unpack/ /usr/share/terraform/
 COPY --from=dotnet /tmp/unpack/ /usr/share/dotnet/
+COPY --from=gh /tmp/unpack /usr/share/gh/
 
 # Install Docker Compose CLI
 RUN pip3 install wheel \
@@ -141,6 +149,7 @@ RUN pip3 install wheel \
     && pip3 install awscli-local \
     && ln -s /usr/share/terraform/bin/terraform /usr/bin/terraform \
     && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet \
+    && ln -s /usr/share/gh/bin/gh /usr/bin/gh \
     && dotnet new -i Amazon.Lambda.Templates
 
 ENV DEBIAN_FRONTEND=
