@@ -1,7 +1,7 @@
 FROM buildpack-deps:bionic AS basics
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG en_GB
+ENV LANG en_GB.UTF-8
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
