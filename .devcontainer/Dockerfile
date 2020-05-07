@@ -105,16 +105,6 @@ RUN curl -fsSL https://download.docker.com/linux/$(lsb_release -is | tr '[:upper
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
-FROM required AS man-install
-
-# Do not exclude man pages & other documentation
-RUN rm /etc/dpkg/dpkg.cfg.d/excludes
-
-# Reinstall all currently installed packages in order to get the man pages back
-RUN apt-get update && \
-    dpkg -l | grep ^ii | cut -d' ' -f3 | xargs apt-get install -y --reinstall && \
-    rm -r /var/lib/apt/lists/*
-
 FROM required AS terraform
 
 RUN TERRAFORM_VERSION=0.12.24 \
@@ -134,7 +124,7 @@ RUN GH_VERSION=0.7.0 \
     && mkdir -p ${UNPACK_FOLDER} \
     && wget -c https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz -O - | tar -zx --strip-components=1 -C ${UNPACK_FOLDER}/
 
-FROM man-install as final
+FROM required as final
 
 COPY --from=terraform ${UNPACK_FOLDER} /usr/share/terraform/
 COPY --from=dotnet ${UNPACK_FOLDER} /usr/share/dotnet/
