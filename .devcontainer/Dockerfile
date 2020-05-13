@@ -4,21 +4,12 @@ ARG UNPACK_FOLDER=/tmp/unpack
 
 ENV UNPACK_FOLDER=${UNPACK_FOLDER}
 ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG en_GB.UTF-8
-
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         apt-utils \
-        locales \
         lsb-release \
         software-properties-common \
-        sudo \
-    && locale-gen ${LANG} \
-    && dpkg-reconfigure --frontend noninteractive locales \
-    && rm "/etc/locale.gen"
-
-ENV LANGUAGE en_GB:en
-ENV LC_ALL ${LANG}
+        sudo
 
 FROM basics AS add-sudo-user
 
@@ -31,7 +22,8 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && mkdir /home/$USERNAME \
     && chown -R $USER_UID:$USER_GID /home/$USERNAME \
     && usermod -a -G sudo ${USERNAME} \
-    && echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
 
 FROM add-sudo-user AS dotnet-essentials
 
@@ -45,7 +37,7 @@ ENV NUGET_XMLDOC_MODE=skip
 # Install .NET CLI dependencies 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        # .NET Core requirements
+    # .NET Core requirements
         libc6 \
         libgcc1 \
         libgssapi-krb5-2 \
@@ -96,7 +88,6 @@ RUN curl -fsSL https://download.docker.com/linux/$(lsb_release -is | tr '[:upper
         python3-pip \
         python3-setuptools \
         unzip \
-        zsh \
         2>&1 \
         # Install Docker CLI
         docker-ce-cli \
