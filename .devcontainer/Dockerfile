@@ -131,6 +131,6 @@ RUN pip3 install wheel \
     && dotnet new -i Amazon.Lambda.Templates
 
 ENV DEBIAN_FRONTEND=
-ENV CONTAINER_IMAGE_VER=1.0.0
+ENV CONTAINER_IMAGE_VER=2.0.0
 
 ENTRYPOINT [ "sleep", "infinity" ]
