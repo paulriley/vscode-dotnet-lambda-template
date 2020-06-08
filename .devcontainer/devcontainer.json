@@ -12,7 +12,6 @@
 	// Use 'settings' to set *default* container specific settings.json values on container create. 
 	// You can edit these settings after create using File > Preferences > Settings > Remote.
 	"settings": {
-		"terminal.integrated.shell.linux": "/usr/bin/zsh",
 		"files.autoSave": "afterDelay",
 		"terraform.indexing": {
 			"enabled": false
@@ -26,12 +25,15 @@
 
 	"mounts": [
 		// Use Docker from inside the container. See https://aka.ms/vscode-remote/samples/docker-in-docker for details.
-		"type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock"
+		"type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock",
+		// Bind aws configuration folder to local
+		"type=bind,src=${localEnv:HOME}${localEnv:USERPROFILE}/.aws,dst=/home/developer/.aws"
 	],
 
 	// Add the IDs of extensions you want installed when the container is created in the array below.
 	"extensions": [
 		"aaron-bond.better-comments",
+		"amazonwebservices.aws-toolkit-vscode",
 		"eamodio.gitlens",
 		"josefpihrt-vscode.roslynator",
 		"mauve.terraform",

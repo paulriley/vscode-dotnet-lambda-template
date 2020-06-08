@@ -1,1 +1,1 @@
-This template contains the very basics for quickly setting up a dotnet lambda project in an Ubutu 18.04 container with zsh and some useful tools installed.
+This template contains the very basics for quickly setting up a dotnet lambda project in an Ubutu 20.04 container with zsh and some useful tools installed.
